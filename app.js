@@ -10,8 +10,6 @@ var app = express();
 
 require('dotenv').config();
 
-console.log(process.env.DB_URL);
-
 //Set up mongoose connection
 var mongoose = require('mongoose');
 var mongoDB = process.env.DB_URL;
