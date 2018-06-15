@@ -128,7 +128,6 @@ function createItem(res, key, data, message){
  */
 exports.setData = function(req, res){
     Cache.findOne({"key": req.params.key}).exec(function(err, cache) {
-        console.log(cache);
         if (err)
             res.send(500, err.message);
         else {
