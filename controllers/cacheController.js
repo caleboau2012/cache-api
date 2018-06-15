@@ -3,7 +3,6 @@
  */
 var Cache = require('../models/Cache');
 var loremIpsum = require('lorem-ipsum');
-const max = 2;
 
 /**
  * Display all keys in cache.
@@ -34,18 +33,39 @@ exports.getAll = function(req, res) {
  */
 exports.getData = function(req, res){
     Cache.findOne({"key": req.params.key}).exec(function(err, cache){
-        console.log(cache);
         if(err)
             res.send(500, err.message);
         else{
+            //console.log(cache.TTL > Date.now(), typeof(cache.TTL), typeof(Date.now()));
             var response = {};
             if(cache == null){
                 createCacheItem(res, req.params.key, loremIpsum(), "Cache Miss");
             }
+            else if(cache.TTL < Date.now()){
+                console.log("Expired", cache.TTL, Date.now());
+                cache.data = loremIpsum();
+                cache.TTL = Date.now() + (process.env.expiry_period * 86400000);
+                cache.save(function(er){
+                    if(er)
+                        res.send(500, er.message);
+                    else{
+                        response.message = "Cache Miss";
+                        response.data = cache.data;
+                        res.send(response);
+                    }
+                });
+            }
             else{
-                response.message = "Cache Hit";
-                response.data = cache.data;
-                res.send(response);
+                cache.TTL = Date.now() + (process.env.expiry_period * 86400000);
+                cache.save(function(er){
+                    if(er)
+                        res.send(500, er.message);
+                    else{
+                        response.message = "Cache Hit";
+                        response.data = cache.data;
+                        res.send(response);
+                    }
+                });
             }
         }
     });
@@ -61,7 +81,7 @@ exports.getData = function(req, res){
  */
 function createCacheItem(res, key, data, message){
     Cache.find().sort({"TTL": 1}).exec(function(err, caches){
-        if(caches.length >= max){
+        if(caches.length >= process.env.max_in_cache){
             caches[0].remove(function(er){
                 if(er)
                     res.send(er.message);

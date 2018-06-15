@@ -8,9 +8,13 @@ var indexRouter = require('./routes/index');
 
 var app = express();
 
+require('dotenv').config();
+
+console.log(process.env.DB_URL);
+
 //Set up mongoose connection
 var mongoose = require('mongoose');
-var mongoDB = 'mongodb://localhost/cache';
+var mongoDB = process.env.DB_URL;
 mongoose.connect(mongoDB);
 mongoose.Promise = global.Promise;
 var db = mongoose.connection;
