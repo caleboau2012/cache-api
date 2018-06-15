@@ -10,7 +10,8 @@ var Schema = mongoose.Schema;
 var CacheSchema = new Schema({
     key: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     data: {
         type: String,

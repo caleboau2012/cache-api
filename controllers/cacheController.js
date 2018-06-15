@@ -24,9 +24,7 @@ exports.getAll = function(req, res) {
 
 // Get Data for a give key
 exports.getData = function(req, res){
-    var key = req.params.key;
-
-    Cache.findOne({"key": key}).exec(function(err, cache){
+    Cache.findOne({"key": req.params.key}).exec(function(err, cache){
         console.log(cache);
         if(err)
             res.send(500, err.message);
@@ -36,13 +34,12 @@ exports.getData = function(req, res){
                 response.message = "Cache Miss";
                 response.data = loremIpsum();
                 Cache.create({
-                    key: key,
+                    key: req.params.key,
                     data: response.data
                 }, function(err, cache){
                     if(err)
                         res.send(500, err.message);
                     else{
-                        console.log(cache);
                         res.send(response);
                     }
                 });
@@ -58,15 +55,51 @@ exports.getData = function(req, res){
 
 // Create or Update Data
 exports.setData = function(req, res){
-    res.send("To be completed")
+    var cache = {
+        key: req.params.key,
+        data: req.body.data
+    };
+    Cache.update({key: req.params.key}, cache, {upsert: true, setDefaultsOnInsert: true}, function(err){
+        if(err)
+            res.send(500, err.message);
+        else{
+            var response = {
+                message: "Operation successful",
+                data: cache.data
+            };
+            res.send(response);
+        }
+    });
 };
 
 // Delete all data
 exports.deleteAll = function(req, res){
-    res.send("To be completed")
+    Cache.remove({}, function(err){
+        if(err)
+            res.send(500, err.message);
+        else{
+            res.send({message: "All items deleted"});
+        }
+    })
 };
 
 // Delete specific cache data
 exports.deleteData = function(req, res){
-    res.send("To be completed")
+    Cache.findOne({"key": req.params.key}).exec(function(err, cache){
+        if(err)
+            res.send(500, err.message);
+        else {
+            if(cache == null){
+                res.send(404, "No cache items found with this key");
+            }
+            else{
+                cache.remove(function(er){
+                    if(er)
+                        res.send(500, er.message);
+                    else
+                        res.send({message: "Delete operation successful"});
+                })
+            }
+        }
+    })
 };
