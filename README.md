@@ -7,3 +7,6 @@ Please ensure you have mongo running and have the .env file as in this repo (fee
 Run the following commands.
 npm install
 npm start
+
+### How to test
+Please run npm test to run a series of tests I have outlined. Of course, these tests will have to change depending on any changes you make to the code...
